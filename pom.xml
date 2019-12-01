@@ -32,7 +32,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- configure the Fuse version you want to use here -->
-        <fuse.version>7.4.0.fuse-740036-redhat-00001</fuse.version>
+        <fuse.version>7.4.0.fuse-740036-redhat-00002</fuse.version>
 
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
     </properties>
@@ -103,6 +103,24 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.messaginghub</groupId>
+            <artifactId>pooled-jms</artifactId>
+            <version>1.0.4.redhat-00001</version>
+        </dependency>
+
+        <!-- Oracle stuff -->
+        <dependency>
+            <groupId>com.oracle</groupId>
+            <artifactId>aqapi</artifactId>
+            <version>12.2.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle</groupId>
+            <artifactId>ojdbc</artifactId>
+            <version>12.2.0.1</version>
         </dependency>
 
     </dependencies>

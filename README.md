@@ -1,5 +1,48 @@
 # Spring-Boot Camel XA Transactions Quickstart
 
+## Updated for Oracle DB
+
+When this example is run with:
+
+        mvn clean install && java -javaagent:$BYTEMAN_HOME/lib/byteman.jar=script:$BYTEMAN_RULES/jta_transaction.btm,script:$BYTEMAN_RULES/jta_xaresource.btm,script:$BYTEMAN_RULES/jms_xaconnectionfactory.btm  -Ddatabase.host=localhost -Ddatabase.username=admin -Ddatabase.password=admin -Dbroker.host=localhost -Dbroker.username=admin -Dbroker.password=admin -jar target/spring-boot-camel-xa-1.0.0.fuse-740017-redhat-00001.jar
+
+You should see the following Byteman output in the logs - showing **commit** actions on all 3 `XAResource`s:
+
+```
+***** JTA Transaction#init                     (TransactionImple < ac, NoTransaction >)
+***** JTA Transaction#registerSynchronization  (TransactionImple < ac, BasicAction: 0:ffffc0a801ea:85d3:5de3ea97:21 status: ActionStatus.RUNNING >,sync=org.messaginghub.pooled.jms.pool.PooledXAConnection$Synchronization@14f834b1)
+***** JTA Transaction#enlistResource           (TransactionImple < ac, BasicAction: 0:ffffc0a801ea:85d3:5de3ea97:21 status: ActionStatus.RUNNING >,xaRes=oracle.jms.AQjmsXAResource@1c4bc8d6)
+***** JTA-XA XAResource#setTransactionTimeout  (oracle.jms.AQjmsXAResource@1c4bc8d6;seconds=60)
+***** JTA-XA XAResource#setTransactionTimeout  (oracle.jdbc.driver.T4CXAResource@7fd2f093;seconds=60)
+***** JTA-XA XAResource#start                  (oracle.jms.AQjmsXAResource@1c4bc8d6;Xid=< formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffffc0a801ea:85d3:5de3ea97:21, node_name=1, branch_uid=0:ffffc0a801ea:85d3:5de3ea97:23, subordinatenodename=null, eis_name=0 >,flags=0)
+2019-12-01 16:30:26.774  INFO 25735 --- [sumer[FOOQUEUE]] route4                                   : Message sent to outbound: TEST JAVA
+***** JTA-XA XAResource#isSameRM               (oracle.jms.AQjmsXAResource@1c4bc8d6;xares=org.postgresql.xa.PGXAConnection@935d3f9)
+***** JTA-XA XAResource#isSameRM               (oracle.jdbc.driver.T4CXAResource@7fd2f093;xares=org.postgresql.xa.PGXAConnection@935d3f9)
+***** JTA-XA XAResource#setTransactionTimeout  (org.postgresql.xa.PGXAConnection@935d3f9;seconds=60)
+***** JTA-XA XAResource#start                  (org.postgresql.xa.PGXAConnection@935d3f9;Xid=< formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffffc0a801ea:85d3:5de3ea97:21, node_name=1, branch_uid=0:ffffc0a801ea:85d3:5de3ea97:26, subordinatenodename=null, eis_name=0 >,flags=0)
+***** JMS-XA XAConnectionFactory#createXAConnection     (org.apache.activemq.ActiveMQXAConnectionFactory@1d239476)
+***** JTA-XA XAResource#init                   (TransactionContext{transactionId=null,connection=null})
+***** JTA Transaction#enlistResource           (TransactionImple < ac, BasicAction: 0:ffffc0a801ea:85d3:5de3ea97:21 status: ActionStatus.RUNNING >,xaRes=TransactionContext{transactionId=null,connection=ActiveMQConnection {id=ID:tdonohue-f29-45897-1575217826893-1:1,clientId=ID:tdonohue-f29-45897-1575217826893-0:1,started=false}})
+***** JTA-XA XAResource#isSameRM               (org.postgresql.xa.PGXAConnection@935d3f9;xares=TransactionContext{transactionId=null,connection=ActiveMQConnection {id=ID:tdonohue-f29-45897-1575217826893-1:1,clientId=ID:tdonohue-f29-45897-1575217826893-0:1,started=false}})
+***** JTA-XA XAResource#isSameRM               (oracle.jms.AQjmsXAResource@1c4bc8d6;xares=TransactionContext{transactionId=null,connection=ActiveMQConnection {id=ID:tdonohue-f29-45897-1575217826893-1:1,clientId=ID:tdonohue-f29-45897-1575217826893-0:1,started=false}})
+***** JTA-XA XAResource#isSameRM               (oracle.jdbc.driver.T4CXAResource@7fd2f093;xares=TransactionContext{transactionId=null,connection=ActiveMQConnection {id=ID:tdonohue-f29-45897-1575217826893-1:1,clientId=ID:tdonohue-f29-45897-1575217826893-0:1,started=false}})
+***** JTA-XA XAResource#setTransactionTimeout  (TransactionContext{transactionId=null,connection=ActiveMQConnection {id=ID:tdonohue-f29-45897-1575217826893-1:1,clientId=ID:tdonohue-f29-45897-1575217826893-0:1,started=false}};seconds=60)
+***** JTA-XA XAResource#start                  (TransactionContext{transactionId=null,connection=ActiveMQConnection {id=ID:tdonohue-f29-45897-1575217826893-1:1,clientId=ID:tdonohue-f29-45897-1575217826893-0:1,started=false}};Xid=< formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffffc0a801ea:85d3:5de3ea97:21, node_name=1, branch_uid=0:ffffc0a801ea:85d3:5de3ea97:2a, subordinatenodename=null, eis_name=0 >,flags=0)
+***** JTA Transaction#delistResource           (TransactionImple < ac, BasicAction: 0:ffffc0a801ea:85d3:5de3ea97:21 status: ActionStatus.RUNNING >,xaRes=org.postgresql.xa.PGXAConnection@935d3f9,flag=67108864)
+***** JTA-XA XAResource#end                    (org.postgresql.xa.PGXAConnection@935d3f9;Xid=< formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffffc0a801ea:85d3:5de3ea97:21, node_name=1, branch_uid=0:ffffc0a801ea:85d3:5de3ea97:26, subordinatenodename=null, eis_name=0 >,int=67108864)
+***** JTA-XA XAResource#end                    (oracle.jms.AQjmsXAResource@1c4bc8d6;Xid=< formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffffc0a801ea:85d3:5de3ea97:21, node_name=1, branch_uid=0:ffffc0a801ea:85d3:5de3ea97:23, subordinatenodename=null, eis_name=0 >,int=67108864)
+***** JTA-XA XAResource#prepare                (oracle.jms.AQjmsXAResource@1c4bc8d6;Xid=< formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffffc0a801ea:85d3:5de3ea97:21, node_name=1, branch_uid=0:ffffc0a801ea:85d3:5de3ea97:23, subordinatenodename=null, eis_name=0 >)
+***** JTA-XA XAResource#prepare                (org.postgresql.xa.PGXAConnection@935d3f9;Xid=< formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffffc0a801ea:85d3:5de3ea97:21, node_name=1, branch_uid=0:ffffc0a801ea:85d3:5de3ea97:26, subordinatenodename=null, eis_name=0 >)
+***** JTA-XA XAResource#end                    (TransactionContext{transactionId=XID:[131077,globalId=0:ffffc0a801ea:85d3:5de3ea97:21,branchId=0:ffffc0a801ea:85d3:5de3ea97:2a],connection=ActiveMQConnection {id=ID:tdonohue-f29-45897-1575217826893-1:1,clientId=ID:tdonohue-f29-45897-1575217826893-0:1,started=false}};Xid=< formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffffc0a801ea:85d3:5de3ea97:21, node_name=1, branch_uid=0:ffffc0a801ea:85d3:5de3ea97:2a, subordinatenodename=null, eis_name=0 >,int=67108864)
+***** JTA-XA XAResource#prepare                (TransactionContext{transactionId=null,connection=ActiveMQConnection {id=ID:tdonohue-f29-45897-1575217826893-1:1,clientId=ID:tdonohue-f29-45897-1575217826893-0:1,started=false}};Xid=< formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffffc0a801ea:85d3:5de3ea97:21, node_name=1, branch_uid=0:ffffc0a801ea:85d3:5de3ea97:2a, subordinatenodename=null, eis_name=0 >)
+***** JTA-XA XAResource#commit                 (oracle.jms.AQjmsXAResource@1c4bc8d6;Xid=< formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffffc0a801ea:85d3:5de3ea97:21, node_name=1, branch_uid=0:ffffc0a801ea:85d3:5de3ea97:23, subordinatenodename=null, eis_name=0 >,onePhase=false)
+***** JTA-XA XAResource#commit                 (org.postgresql.xa.PGXAConnection@935d3f9;Xid=< formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffffc0a801ea:85d3:5de3ea97:21, node_name=1, branch_uid=0:ffffc0a801ea:85d3:5de3ea97:26, subordinatenodename=null, eis_name=0 >,onePhase=false)
+***** JTA-XA XAResource#commit                 (TransactionContext{transactionId=null,connection=ActiveMQConnection {id=ID:tdonohue-f29-45897-1575217826893-1:1,clientId=ID:tdonohue-f29-45897-1575217826893-0:1,started=false}};Xid=< formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffffc0a801ea:85d3:5de3ea97:21, node_name=1, branch_uid=0:ffffc0a801ea:85d3:5de3ea97:2a, subordinatenodename=null, eis_name=0 >,onePhase=false)
+```
+
+
+----
+
 This example demonstrates how to run a Camel Service on Spring-Boot that supports XA transactions on two external transactional resources: a JMS resource (A-MQ) and a database (PostgreSQL).
 
 External resources can be provided by Openshift and must be started before running this quickstart.  

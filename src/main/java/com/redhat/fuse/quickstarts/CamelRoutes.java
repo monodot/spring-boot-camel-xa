@@ -55,10 +55,13 @@ public class CamelRoutes extends RouteBuilder {
                 .endChoice();
 
 
-        from("jms:outbound")
+        from("oracleaq:FOOQUEUE")
+                .transacted()
                 .log("Message sent to outbound: ${body}")
                 .setHeader("message", simple("${body}-ok"))
-                .to("sql:insert into audit_log (message) values (:#message)");
+                .to("sql:insert into audit_log (message) values (:#message)")
+                .setBody(constant("Some message"))
+                .to("jms:outbound?disableReplyTo=true");
 
     }
 
